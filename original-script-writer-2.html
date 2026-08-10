@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script Roll — YouTube Script Writer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF6;
+    --paper-dim:#F1EFE7;
+    --ink:#1B1A17;
+    --ink-soft:#5E5C54;
+    --red:#C6402F;
+    --red-dark:#A2321F;
+    --yellow:#EFBF3E;
+    --line:#DBD7C9;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper-dim);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding: 24px 14px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  /* header / masthead */
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:10px;
+    margin-bottom:22px;
+    background:var(--paper);
+  }
+  .brand{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:-0.02em;
+  }
+  .brand span{color:var(--red);}
+  .brand small{
+    display:block;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:400;
+    font-size:0.68rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .rec-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red);
+    display:inline-block;
+    margin-right:6px;
+    box-shadow:0 0 0 0 rgba(198,64,47,.5);
+  }
+  .rec-dot.live{animation:pulse 1.1s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(198,64,47,.45);}
+    70%{box-shadow:0 0 0 8px rgba(198,64,47,0);}
+    100%{box-shadow:0 0 0 0 rgba(198,64,47,0);}
+  }
+
+  /* card */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .card h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  label{
+    display:block;
+    font-size:0.82rem;
+    font-weight:600;
+    margin-bottom:5px;
+    margin-top:14px;
+  }
+  label:first-of-type{margin-top:0;}
+  label .opt{font-weight:400;color:var(--ink-soft);}
+
+  input[type=text], input[type=password], textarea, select{
+    width:100%;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:0.95rem;
+    padding:10px 11px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:2px solid var(--red);
+    outline-offset:1px;
+    border-color:var(--red);
+  }
+  textarea{resize:vertical;min-height:60px;font-family:'IBM Plex Sans',sans-serif;}
+  .row{display:flex;gap:10px;}
+  .row > div{flex:1;}
+
+  .key-row{display:flex;gap:8px;align-items:flex-start;}
+  .key-row input{flex:1;}
+  .toggle-key{
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    padding:0 10px;
+    cursor:pointer;
+    height:38px;
+  }
+  .remember{
+    display:flex;align-items:center;gap:6px;
+    margin-top:8px;font-size:0.78rem;color:var(--ink-soft);
+    font-weight:400;
+  }
+  .remember input{width:auto;}
+  .key-help{
+    font-size:0.76rem;color:var(--ink-soft);margin-top:8px;line-height:1.5;
+  }
+  .key-help a{color:var(--red-dark);}
+  details{margin-top:8px;}
+  details summary{
+    cursor:pointer;font-size:0.78rem;color:var(--red-dark);font-weight:600;
+  }
+  details ol{margin:8px 0 0;padding-left:18px;font-size:0.8rem;color:var(--ink-soft);line-height:1.6;}
+
+  button.generate{
+    width:100%;
+    margin-top:18px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:var(--radius);
+    padding:14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:0.88rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .15s ease;
+  }
+  button.generate:hover{background:var(--red-dark);}
+  button.generate:disabled{background:var(--ink-soft);cursor:wait;}
+
+  .error{
+    margin-top:14px;
+    border-left:3px solid var(--red);
+    background:#FBEAE7;
+    color:var(--red-dark);
+    padding:10px 12px;
+    font-size:0.85rem;
+    border-radius:0 var(--radius) var(--radius) 0;
+    display:none;
+  }
+  .error.show{display:block;}
+
+  /* output — teleprompter roll */
+  .output-card{display:none;}
+  .output-card.show{display:block;}
+  .output-head{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;
+  }
+  .output-actions{display:flex;gap:8px;}
+  .output-actions button{
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    padding:7px 10px;
+    cursor:pointer;
+  }
+  .output-actions button:hover{border-color:var(--ink);}
+  .roll{
+    position:relative;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 16px 18px 46px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.87rem;
+    line-height:1.75;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    max-height:60vh;
+    overflow-y:auto;
+  }
+  .roll::before{
+    content:"";
+    position:absolute;
+    left:32px;top:0;bottom:0;
+    width:1px;
+    background:var(--line);
+  }
+  .roll .ln{
+    position:absolute;
+    left:10px;
+    font-size:0.68rem;
+    color:var(--line);
+    width:20px;
+    text-align:right;
+  }
+
+  .loading{
+    display:none;
+    align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.8rem;color:var(--ink-soft);
+    margin-top:12px;
+  }
+  .loading.show{display:flex;}
+
+  footer{
+    text-align:center;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin-top:26px;
+    line-height:1.6;
+  }
+  footer a{color:var(--red-dark);}
+
+  @media (max-width:420px){
+    .row{flex-direction:column;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rec-dot.live{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand"><span>Script</span> Roll<small>YouTube script writer</small></div>
+  </header>
+
+  <div class="card">
+    <h2>1 — Your free Google key</h2>
+    <label>Gemini API key</label>
+    <div class="key-row">
+      <input type="password" id="apiKey" placeholder="Paste your key here" autocomplete="off">
+      <button type="button" class="toggle-key" id="toggleKey">SHOW</button>
+    </div>
+    <label class="remember"><input type="checkbox" id="rememberKey"> Remember this key on this device only</label>
+    <details>
+      <summary>Don't have a key? Get one free in 3 steps</summary>
+      <ol>
+        <li>Open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> and sign in with any Google account — no card needed.</li>
+        <li>Tap "Create API key".</li>
+        <li>Copy the key and paste it above.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>2 — The video</h2>
+    <label>Topic <span class="opt">— required</span></label>
+    <input type="text" id="topic" placeholder="e.g. Why cats knead blankets">
+
+    <div class="row">
+      <div>
+        <label>Tone</label>
+        <select id="tone">
+          <option>Casual / vlog</option>
+          <option>Educational</option>
+          <option>Entertaining / comedic</option>
+          <option>Motivational</option>
+          <option>Professional</option>
+        </select>
+      </div>
+      <div>
+        <label>Length</label>
+        <select id="length">
+          <option value="under 60 seconds (Short)">Short (&lt;60s)</option>
+          <option value="3-5 minutes">3–5 min</option>
+          <option value="8-10 minutes">8–10 min</option>
+          <option value="15+ minutes">15+ min</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Audience <span class="opt">— optional</span></label>
+    <input type="text" id="audience" placeholder="e.g. new pet owners">
+
+    <label>Points to include <span class="opt">— optional</span></label>
+    <textarea id="notes" placeholder="Any facts, jokes, or beats you want in there"></textarea>
+
+    <button class="generate" id="genBtn"><span class="rec-dot" id="recDot"></span><span id="genLabel">Write my script</span></button>
+    <div class="loading" id="loading">Writing… this can take a few seconds</div>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <div class="card output-card" id="outputCard">
+    <div class="output-head">
+      <h2 style="margin:0;border:0;">Your script</h2>
+      <div class="output-actions">
+        <button id="copyBtn">COPY</button>
+        <button id="downloadBtn">.TXT</button>
+      </div>
+    </div>
+    <div class="roll" id="rollOutput"></div>
+  </div>
+
+  <footer>Your key is only used in your browser to call Google's Gemini API directly — it isn't sent anywhere else.<br>Free tier has daily/per-minute limits set by Google.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const apiKeyInput = $('apiKey');
+const rememberBox = $('rememberKey');
+const toggleKeyBtn = $('toggleKey');
+const genBtn = $('genBtn');
+const genLabel = $('genLabel');
+const recDot = $('recDot');
+const loading = $('loading');
+const errorBox = $('errorBox');
+const outputCard = $('outputCard');
+const rollOutput = $('rollOutput');
+
+const STORAGE_KEY = 'yt-script-writer:gemini-key';
+
+// Load a remembered key, if any
+(async () => {
+  try {
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if (res && res.value) {
+      apiKeyInput.value = res.value;
+      rememberBox.checked = true;
+    }
+  } catch (e) { /* nothing stored yet — fine */ }
+})();
+
+toggleKeyBtn.addEventListener('click', () => {
+  const showing = apiKeyInput.type === 'text';
+  apiKeyInput.type = showing ? 'password' : 'text';
+  toggleKeyBtn.textContent = showing ? 'SHOW' : 'HIDE';
+});
+
+function showError(msg){
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+function clearError(){
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
+}
+
+function buildPrompt({topic, tone, length, audience, notes}){
+  return [
+    `Write a complete, ready-to-record YouTube video script.`,
+    `Topic: ${topic}`,
+    `Tone: ${tone}`,
+    `Target length: ${length}`,
+    audience ? `Target audience: ${audience}` : '',
+    notes ? `Points/beats to include: ${notes}` : '',
+    ``,
+    `Structure it clearly with these labeled sections: HOOK (first 5-10 seconds, must grab attention immediately), INTRO, MAIN CONTENT (broken into short labeled beats or timestamps), CALL TO ACTION, OUTRO.`,
+    `Write it the way it should actually be spoken on camera — natural sentences, no stage directions in brackets except brief [B-ROLL: ...] or [PAUSE] cues where genuinely useful.`,
+    `Do not include any preamble or explanation before or after the script — output only the script itself.`
+  ].filter(Boolean).join('\n');
+}
+
+async function generate(){
+  clearError();
+  const apiKey = apiKeyInput.value.trim();
+  const topic = $('topic').value.trim();
+  const tone = $('tone').value;
+  const length = $('length').value;
+  const audience = $('audience').value.trim();
+  const notes = $('notes').value.trim();
+
+  if (!apiKey){ showError('Paste your free Gemini API key above first.'); apiKeyInput.focus(); return; }
+  if (!topic){ showError('Give the video a topic first.'); $('topic').focus(); return; }
+
+  genBtn.disabled = true;
+  genLabel.textContent = 'Writing…';
+  recDot.classList.add('live');
+  loading.classList.add('show');
+  outputCard.classList.remove('show');
+
+  const prompt = buildPrompt({topic, tone, length, audience, notes});
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+  try {
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents:[{ parts:[{ text: prompt }] }],
+        generationConfig:{ temperature: 0.9, maxOutputTokens: 4096 }
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok){
+      const msg = (data && data.error && data.error.message) || `Request failed (${res.status})`;
+      if (res.status === 400) throw new Error('Google rejected the request — check that your API key was copied correctly.');
+      if (res.status === 403) throw new Error('That key was rejected. Make sure it was created at aistudio.google.com/apikey and is enabled for the Gemini API.');
+      if (res.status === 429) throw new Error('Free tier rate limit hit — wait a minute and try again.');
+      throw new Error(msg);
+    }
+
+    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+    const text = parts ? parts.map(p => p.text || '').join('') : '';
+    if (!text) throw new Error('No script came back — try generating again.');
+
+    renderScript(text);
+
+    if (rememberBox.checked){
+      try { await window.storage.set(STORAGE_KEY, apiKey, false); } catch(e){}
+    } else {
+      try { await window.storage.delete(STORAGE_KEY, false); } catch(e){}
+    }
+
+  } catch (err){
+    showError(err.message || 'Something went wrong reaching Gemini. Check your connection and try again.');
+  } finally {
+    genBtn.disabled = false;
+    genLabel.textContent = 'Write my script';
+    recDot.classList.remove('live');
+    loading.classList.remove('show');
+  }
+}
+
+function renderScript(text){
+  rollOutput.innerHTML = '';
+  const lines = text.split('\n');
+  const container = document.createElement('div');
+  lines.forEach((line, i) => {
+    const rowNum = document.createElement('span');
+    rowNum.textContent = String(i+1).padStart(2,'0');
+    rowNum.style.cssText = 'position:absolute;left:10px;font-size:0.68rem;color:var(--line);width:20px;text-align:right;';
+    const rowText = document.createElement('div');
+    rowText.style.position = 'relative';
+    rowText.style.minHeight = '1em';
+    rowText.textContent = line || '\u00A0';
+    rowText.appendChild(rowNum);
+    container.appendChild(rowText);
+  });
+  rollOutput.appendChild(container);
+  outputCard.classList.add('show');
+  outputCard.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+$('copyBtn').addEventListener('click', async () => {
+  const text = rollOutput.innerText;
+  try {
+    await navigator.clipboard.writeText(text);
+    $('copyBtn').textContent = 'COPIED';
+    setTimeout(()=> $('copyBtn').textContent = 'COPY', 1400);
+  } catch(e){
+    showError('Could not copy automatically — select the text manually.');
+  }
+});
+
+$('downloadBtn').addEventListener('click', () => {
+  const text = rollOutput.innerText;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const topic = $('topic').value.trim().slice(0,40).replace(/[^a-z0-9]+/gi,'-').toLowerCase() || 'script';
+  a.download = `${topic}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
+
+genBtn.addEventListener('click', generate);
+</script>
+</body>
+</html>

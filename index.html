@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script Roll — YouTube Script Writer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF6;
+    --paper-dim:#F1EFE7;
+    --ink:#1B1A17;
+    --ink-soft:#5E5C54;
+    --red:#C6402F;
+    --red-dark:#A2321F;
+    --yellow:#EFBF3E;
+    --line:#DBD7C9;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper-dim);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding: 24px 14px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  /* header / masthead */
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:10px;
+    margin-bottom:22px;
+    background:var(--paper);
+  }
+  .brand{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:-0.02em;
+  }
+  .brand span{color:var(--red);}
+  .brand small{
+    display:block;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:400;
+    font-size:0.68rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .rec-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red);
+    display:inline-block;
+    margin-right:6px;
+    box-shadow:0 0 0 0 rgba(198,64,47,.5);
+  }
+  .rec-dot.live{animation:pulse 1.1s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(198,64,47,.45);}
+    70%{box-shadow:0 0 0 8px rgba(198,64,47,0);}
+    100%{box-shadow:0 0 0 0 rgba(198,64,47,0);}
+  }
+
+  /* card */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .card h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  label{
+    display:block;
+    font-size:0.82rem;
+    font-weight:600;
+    margin-bottom:5px;
+    margin-top:14px;
+  }
+  label:first-of-type{margin-top:0;}
+  label .opt{font-weight:400;color:var(--ink-soft);}
+
+  input[type=text], input[type=password], textarea, select{
+    width:100%;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:0.95rem;
+    padding:10px 11px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:2px solid var(--red);
+    outline-offset:1px;
+    border-color:var(--red);
+  }
+  textarea{resize:vertical;min-height:60px;font-family:'IBM Plex Sans',sans-serif;}
+  .row{display:flex;gap:10px;}
+  .row > div{flex:1;}
+
+  .key-row{display:flex;gap:8px;align-items:flex-start;}
+  .key-row input{flex:1;}
+  .toggle-key{
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    padding:0 10px;
+    cursor:pointer;
+    height:38px;
+  }
+  .remember{
+    display:flex;align-items:center;gap:6px;
+    margin-top:8px;font-size:0.78rem;color:var(--ink-soft);
+    font-weight:400;
+  }
+  .remember input{width:auto;}
+  .key-help{
+    font-size:0.76rem;color:var(--ink-soft);margin-top:8px;line-height:1.5;
+  }
+  .key-help a{color:var(--red-dark);}
+  details{margin-top:8px;}
+  details summary{
+    cursor:pointer;font-size:0.78rem;color:var(--red-dark);font-weight:600;
+  }
+  details ol{margin:8px 0 0;padding-left:18px;font-size:0.8rem;color:var(--ink-soft);line-height:1.6;}
+
+  button.generate{
+    width:100%;
+    margin-top:18px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:var(--radius);
+    padding:14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:0.88rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .15s ease;
+  }
+  button.generate:hover{background:var(--red-dark);}
+  button.generate:disabled{background:var(--ink-soft);cursor:wait;}
+
+  .error{
+    margin-top:14px;
+    border-left:3px solid var(--red);
+    background:#FBEAE7;
+    color:var(--red-dark);
+    padding:10px 12px;
+    font-size:0.85rem;
+    border-radius:0 var(--radius) var(--radius) 0;
+    display:none;
+  }
+  .error.show{display:block;}
+
+  /* output — teleprompter roll */
+  .output-card{display:none;}
+  .output-card.show{display:block;}
+  .output-head{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;
+  }
+  .output-actions{display:flex;gap:8px;}
+  .output-actions button{
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    padding:7px 10px;
+    cursor:pointer;
+  }
+  .output-actions button:hover{border-color:var(--ink);}
+  .roll{
+    position:relative;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 16px 18px 46px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.87rem;
+    line-height:1.75;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    max-height:60vh;
+    overflow-y:auto;
+  }
+  .roll::before{
+    content:"";
+    position:absolute;
+    left:32px;top:0;bottom:0;
+    width:1px;
+    background:var(--line);
+  }
+  .roll .ln{
+    position:absolute;
+    left:10px;
+    font-size:0.68rem;
+    color:var(--line);
+    width:20px;
+    text-align:right;
+  }
+
+  .loading{
+    display:none;
+    align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.8rem;color:var(--ink-soft);
+    margin-top:12px;
+  }
+  .loading.show{display:flex;}
+
+  footer{
+    text-align:center;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin-top:26px;
+    line-height:1.6;
+  }
+  footer a{color:var(--red-dark);}
+
+  @media (max-width:420px){
+    .row{flex-direction:column;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rec-dot.live{animation:none;}
+  }
+
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;}
+  .auth-area{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .auth-status{font:600 .75rem 'IBM Plex Mono',monospace;color:var(--ink-soft);}
+  .auth-btn{background:transparent;border:1px solid var(--line);padding:9px 12px;border-radius:2px;cursor:pointer;font:600 .72rem 'IBM Plex Mono',monospace;}
+  .auth-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .auth-btn.danger{color:var(--red-dark);}
+  .auth-panel{border:1px solid var(--line);background:var(--paper);padding:16px;margin-bottom:18px;display:none;}
+  .auth-panel.show{display:block;}
+  .auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .auth-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+  .hint{font-size:.75rem;color:var(--ink-soft);line-height:1.5;margin-top:8px;}
+  .account-card{display:none;border-left:3px solid var(--red);}
+  .account-card.show{display:block;}
+  .account-card p{margin:.4rem 0;color:var(--ink-soft);font-size:.85rem;}
+  .hidden{display:none!important;}
+  .save-row{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+  .save-row input{flex:1;min-width:220px;}
+  .scripts-list{display:grid;gap:8px;margin-top:12px;}
+  .script-item{border:1px solid var(--line);background:var(--paper-dim);padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center;}
+  .script-item strong{display:block;margin-bottom:4px;}
+  .script-item small{color:var(--ink-soft);}
+  .script-actions{display:flex;gap:6px;flex-shrink:0;}
+  .script-actions button{background:var(--paper);border:1px solid var(--line);padding:7px 9px;cursor:pointer;font:600 .68rem 'IBM Plex Mono',monospace;}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;padding:10px 14px;font:.75rem 'IBM Plex Mono',monospace;transition:.2s;z-index:50;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .usage{font:600 .72rem 'IBM Plex Mono',monospace;color:var(--ink-soft);margin-top:8px;}
+  @media(max-width:650px){.auth-grid{grid-template-columns:1fr}.topbar{align-items:flex-start}.script-item{align-items:flex-start;flex-direction:column}.script-actions{width:100%}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <header>
+      <div class="brand"><span>Script</span> Roll<small>YouTube script writer</small></div>
+    </header>
+    <div class="auth-area">
+      <span class="auth-status" id="authStatus">Not signed in</span>
+      <button class="auth-btn" id="loginBtn">LOGIN</button>
+      <button class="auth-btn primary" id="signupBtn">SIGN UP</button>
+      <button class="auth-btn danger hidden" id="logoutBtn">LOG OUT</button>
+    </div>
+  </div>
+
+  <div class="card auth-panel" id="authPanel">
+    <h2 id="authTitle">Sign in</h2>
+    <div class="auth-grid">
+      <div><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters"></div>
+    </div>
+    <div class="auth-actions">
+      <button class="generate" id="authSubmit">SIGN IN</button>
+      <button class="auth-btn" id="authSwitch">Create an account</button>
+    </div>
+    <div class="hint" id="authHint">Your password is hashed on the server. We never store your plain-text password.</div>
+    <div class="error" id="authError"></div>
+  </div>
+
+  <div class="card account-card" id="accountCard">
+    <h2>Account</h2>
+    <p>Signed in as <strong id="accountEmail">—</strong></p>
+    <div class="usage" id="usageText">AI generations today: —</div>
+  </div>
+
+  <div class="card">
+    <h2>Write a video</h2>
+    <label>Topic <span class="opt">— required</span></label>
+    <input type="text" id="topic" placeholder="e.g. Why cats knead blankets">
+    <div class="row">
+      <div>
+        <label>Tone</label>
+        <select id="tone">
+          <option>Casual / vlog</option>
+          <option>Educational</option>
+          <option>Entertaining / comedic</option>
+          <option>Motivational</option>
+          <option>Professional</option>
+        </select>
+      </div>
+      <div>
+        <label>Length</label>
+        <select id="length">
+          <option value="under 60 seconds (Short)">Short (&lt;60s)</option>
+          <option value="3-5 minutes">3–5 min</option>
+          <option value="8-10 minutes">8–10 min</option>
+          <option value="15+ minutes">15+ min</option>
+        </select>
+      </div>
+    </div>
+    <label>Audience <span class="opt">— optional</span></label>
+    <input type="text" id="audience" placeholder="e.g. new pet owners">
+    <label>Points to include <span class="opt">— optional</span></label>
+    <textarea id="notes" placeholder="Any facts, jokes, or beats you want in there"></textarea>
+    <button class="generate" id="genBtn"><span class="rec-dot" id="recDot"></span><span id="genLabel">Write my script</span></button>
+    <div class="loading" id="loading">Writing… this can take a few seconds</div>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <div class="card output-card" id="outputCard">
+    <div class="output-head">
+      <h2 style="margin:0;border:0;">Your script</h2>
+      <div class="output-actions">
+        <button id="copyBtn">COPY</button>
+        <button id="downloadBtn">.TXT</button>
+      </div>
+    </div>
+    <div class="roll" id="rollOutput"></div>
+    <div class="save-row">
+      <input id="saveTitle" type="text" placeholder="Script title" value="My YouTube Script">
+      <button class="generate" id="saveBtn">SAVE SCRIPT</button>
+    </div>
+    <div class="error" id="saveError"></div>
+  </div>
+
+  <div class="card" id="scriptsCard">
+    <h2>My saved scripts</h2>
+    <div class="scripts-list" id="scriptsList"><div class="hint">Sign in to see your saved scripts.</div></div>
+  </div>
+
+  <footer>Your Gemini API key is stored only as a Cloudflare Worker secret and is never sent to the browser.</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+let authMode = 'login';
+let currentUser = null;
+let lastScript = '';
+
+function toast(message){
+  const el=$('toast'); el.textContent=message; el.classList.add('show');
+  clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),2200);
+}
+function showError(id,msg){ const el=$(id); el.textContent=msg; el.classList.add('show'); }
+function clearError(id){ const el=$(id); el.textContent=''; el.classList.remove('show'); }
+function setAuthMode(mode){
+  authMode=mode;
+  $('authTitle').textContent=mode==='login'?'Sign in':'Create account';
+  $('authSubmit').textContent=mode==='login'?'SIGN IN':'CREATE ACCOUNT';
+  $('authSwitch').textContent=mode==='login'?'Create an account':'I already have an account';
+  $('authPassword').autocomplete=mode==='login'?'current-password':'new-password';
+  $('authPanel').classList.add('show');
+  clearError('authError');
+}
+function buildPrompt({topic,tone,length,audience,notes}){
+  return [
+    'Write a complete, ready-to-record YouTube video script.',
+    `Topic: ${topic}`,
+    `Tone: ${tone}`,
+    `Target length: ${length}`,
+    audience ? `Target audience: ${audience}` : '',
+    notes ? `Points/beats to include: ${notes}` : '',
+    '',
+    'Structure it clearly with these labeled sections: HOOK (first 5-10 seconds, must grab attention immediately), INTRO, MAIN CONTENT (broken into short labeled beats or timestamps), CALL TO ACTION, OUTRO.',
+    'Write it the way it should actually be spoken on camera — natural sentences, no stage directions in brackets except brief [B-ROLL: ...] or [PAUSE] cues where genuinely useful.',
+    'Do not include any preamble or explanation before or after the script — output only the script itself.'
+  ].filter(Boolean).join('\n');
+}
+async function api(path, options={}){
+  const res=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  let data={}; try{data=await res.json();}catch{}
+  if(!res.ok) throw new Error(data.error||`Request failed (${res.status})`);
+  return data;
+}
+async function refreshSession(){
+  try{
+    const data=await api('/api/me',{method:'GET'});
+    currentUser=data.user;
+    $('authStatus').textContent=currentUser.email;
+    $('loginBtn').classList.add('hidden'); $('signupBtn').classList.add('hidden'); $('logoutBtn').classList.remove('hidden');
+    $('authPanel').classList.remove('show'); $('accountCard').classList.add('show'); $('accountEmail').textContent=currentUser.email;
+    await loadScripts();
+  }catch{
+    currentUser=null;
+    $('authStatus').textContent='Not signed in';
+    $('loginBtn').classList.remove('hidden'); $('signupBtn').classList.remove('hidden'); $('logoutBtn').classList.add('hidden');
+    $('accountCard').classList.remove('show');
+    $('scriptsList').innerHTML='<div class="hint">Sign in to see your saved scripts.</div>';
+  }
+}
+async function submitAuth(){
+  clearError('authError');
+  const email=$('authEmail').value.trim(); const password=$('authPassword').value;
+  if(!email || !email.includes('@')) return showError('authError','Enter a valid email address.');
+  if(password.length<8) return showError('authError','Password must be at least 8 characters.');
+  $('authSubmit').disabled=true;
+  try{
+    const data=await api(authMode==='login'?'/api/login':'/api/signup',{method:'POST',body:JSON.stringify({email,password})});
+    currentUser=data.user; $('authEmail').value=''; $('authPassword').value='';
+    toast(authMode==='login'?'Signed in':'Account created');
+    await refreshSession();
+  }catch(e){showError('authError',e.message)}finally{$('authSubmit').disabled=false}
+}
+async function logout(){
+  try{await api('/api/logout',{method:'POST'});}catch{}
+  currentUser=null; lastScript=''; $('rollOutput').innerHTML=''; $('outputCard').classList.remove('show'); toast('Signed out'); await refreshSession();
+}
+async function generate(){
+  clearError('errorBox');
+  if(!currentUser){setAuthMode('login'); return showError('authError','Sign in first to generate a script.');}
+  const topic=$('topic').value.trim(), tone=$('tone').value, length=$('length').value, audience=$('audience').value.trim(), notes=$('notes').value.trim();
+  if(!topic){showError('errorBox','Give the video a topic first.'); $('topic').focus(); return;}
+  $('genBtn').disabled=true; $('genLabel').textContent='Writing…'; $('recDot').classList.add('live'); $('loading').classList.add('show'); $('outputCard').classList.remove('show');
+  try{
+    const data=await api('/api/generate',{method:'POST',body:JSON.stringify({prompt:buildPrompt({topic,tone,length,audience,notes})})});
+    lastScript=data.text; renderScript(lastScript); $('saveTitle').value=topic.slice(0,80); $('usageText').textContent=`AI generations today: ${data.used}/${data.limit}`;
+  }catch(e){showError('errorBox',e.message)}finally{$('genBtn').disabled=false; $('genLabel').textContent='Write my script'; $('recDot').classList.remove('live'); $('loading').classList.remove('show')}
+}
+function renderScript(text){
+  $('rollOutput').innerHTML=''; const container=document.createElement('div');
+  text.split('\n').forEach((line,i)=>{const row=document.createElement('div');row.style.position='relative';row.style.minHeight='1em';const num=document.createElement('span');num.textContent=String(i+1).padStart(2,'0');num.style.cssText='position:absolute;left:10px;font-size:.68rem;color:var(--line);width:20px;text-align:right;';const txt=document.createElement('span');txt.style.marginLeft='38px';txt.textContent=line||'\u00A0';row.append(num,txt);container.appendChild(row)});
+  $('rollOutput').appendChild(container); $('outputCard').classList.add('show'); $('outputCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function saveScript(){
+  clearError('saveError'); if(!currentUser)return setAuthMode('login'); if(!lastScript)return showError('saveError','Generate a script first.');
+  try{await api('/api/scripts',{method:'POST',body:JSON.stringify({title:$('saveTitle').value.trim()||'Untitled script',content:lastScript})});toast('Script saved');await loadScripts();}catch(e){showError('saveError',e.message)}
+}
+async function loadScripts(){
+  if(!currentUser)return;
+  try{
+    const data=await api('/api/scripts',{method:'GET'}); const list=$('scriptsList');
+    if(!data.scripts.length){list.innerHTML='<div class="hint">No saved scripts yet.</div>';return;}
+    list.innerHTML=''; data.scripts.forEach(s=>{const item=document.createElement('div');item.className='script-item';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=s.title;const small=document.createElement('small');small.textContent=new Date(s.updated_at+'Z').toLocaleString();info.append(strong,small);const actions=document.createElement('div');actions.className='script-actions';const open=document.createElement('button');open.textContent='OPEN';open.onclick=()=>{lastScript=s.content;renderScript(s.content);$('saveTitle').value=s.title;};const del=document.createElement('button');del.textContent='DELETE';del.onclick=async()=>{if(!confirm('Delete this script?'))return;try{await api('/api/scripts/'+s.id,{method:'DELETE'});toast('Deleted');await loadScripts()}catch(e){toast(e.message)}};actions.append(open,del);item.append(info,actions);list.appendChild(item)});
+  }catch(e){$('scriptsList').innerHTML='<div class="hint">Could not load scripts.</div>'}
+}
+$('loginBtn').onclick=()=>setAuthMode('login'); $('signupBtn').onclick=()=>setAuthMode('signup'); $('authSwitch').onclick=()=>setAuthMode(authMode==='login'?'signup':'login'); $('authSubmit').onclick=submitAuth; $('logoutBtn').onclick=logout; $('genBtn').onclick=generate; $('saveBtn').onclick=saveScript;
+$('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(lastScript);$('copyBtn').textContent='COPIED';setTimeout(()=>$('copyBtn').textContent='COPY',1400)}catch{showError('saveError','Could not copy automatically — select the text manually.')}};
+$('downloadBtn').onclick=()=>{const blob=new Blob([lastScript],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(($('topic').value.trim()||'script').slice(0,40).replace(/[^a-z0-9]+/gi,'-').toLowerCase()||'script')+'.txt';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href)};
+refreshSession();
+</script>
+</body>
+</html>
